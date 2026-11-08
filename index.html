@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0f766e"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}</script><meta charset="utf-8"><title>نظام الجرد</title>
+<meta name="description" content="نظام جرد المخزن وإصدار الوصولات">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--bg:#f6f7f9;--c:#fff;--t:#1a1d21;--m:#6b7280;--b:#e2e5ea;--p:#0f766e;--d:#b91c1c}
+@media(prefers-color-scheme:dark){:root{--bg:#111418;--c:#1a1f25;--t:#eceff3;--m:#9aa3af;--b:#2c333b;--p:#2dd4bf;--d:#f87171}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,"Segoe UI",Tahoma,sans-serif;font-size:15px}
+.w{max-width:900px;margin:auto;padding:12px}nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}nav button{flex:1;white-space:nowrap}
+button,input,select{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--b);background:var(--c);color:var(--t)}button{cursor:pointer}
+button.on,button.pr{background:var(--p);color:#fff;border-color:var(--p)}button.dg{color:var(--d)}
+.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:12px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.row>*{flex:1;min-width:110px}.sc{overflow-x:auto}
+table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid var(--b);text-align:right;white-space:nowrap}th{color:var(--m)}
+.m{color:var(--m);font-size:13px}.low{color:var(--d);font-weight:700}h3{margin:0 0 10px}.bn{padding:10px;border-radius:10px;margin-bottom:10px}.er{background:#b91c1c;color:#fff}.wn{background:#fef3c7;color:#78350f}.wn button{margin-inline-start:6px}
+#login{max-width:340px;margin:10vh auto}#login input{width:100%;margin-bottom:8px}
+#fab{position:fixed;bottom:16px;left:16px;width:52px;height:52px;border-radius:50%;font-size:24px;margin:0;padding:0;flex:none;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.35)}#cm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;align-items:center;justify-content:center;padding:16px}#cm .box{background:var(--c);color:var(--t);border:1px solid var(--b);border-radius:12px;padding:14px;width:100%;max-width:360px}
+#credit{display:none;position:fixed;bottom:12px;left:12px;align-items:center;gap:8px;font-size:13px;color:var(--m);direction:ltr;z-index:5}#credit a{display:flex}
+</style></head><body><div class="w">
+<div id="login" class="card" style="display:none"></div><div id="credit"><span>by: ah_is19</span><a href="https://t.me/ah_is19" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="12" fill="#229ED9"/><path fill="#fff" d="M5.2 11.7l11.6-4.5c.5-.2 1 .1.8.9l-2 9.3c-.1.7-.5.9-1.1.5l-3-2.2-1.4 1.4c-.2.2-.3.3-.6.3l.2-3.1 5.6-5c.2-.2 0-.3-.4-.1l-6.9 4.4-3-.9c-.6-.2-.6-.6.2-.9z"/></svg></a><a href="https://instagram.com/ah_is19" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" width="22" height="22"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#feda75"/><stop offset=".3" stop-color="#fa7e1e"/><stop offset=".55" stop-color="#d62976"/><stop offset=".8" stop-color="#962fbf"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#igg)"/><rect x="5.2" y="5.2" width="13.6" height="13.6" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.6" cy="7.4" r="1" fill="#fff"/></svg></a></div>
+<div id="app" style="display:none">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2 style="margin:0">📦 نظام الجرد</h2><span><span id="who" class="m"></span> <button onclick="signOut()">خروج</button></span></div>
+<div id="bn"></div><nav id="nav"></nav><div id="v"></div><button id="fab" class="pr" title="حاسبة سعر القطعة" onclick="calcOpen()">🧮</button><div id="cm" onclick="if(event.target===this)calcClose()"><div class="box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="margin:0">🧮 حاسبة سعر القطعة</h3><button onclick="calcClose()">✕</button></div><div class="row"><input id="cc_t" type="number" step="any" inputmode="decimal" placeholder="السعر الكلي (مثلاً 200)" oninput="calcP()"><select id="cc_c" onchange="calcP()"><option>USD</option><option>IQD</option></select></div><input id="cc_q" type="number" min="1" inputmode="numeric" placeholder="عدد القطع (مثلاً 100)" oninput="calcP()"><div id="cc_r" class="m">سعر القطعة الواحدة سيظهر هنا</div></div></div></div></div>
+<script>
+const KEY='rtbmhlk_db_v1',NL=String.fromCharCode(10);
+let DB=null,me=null,tab='inv',cuSel=null,cuq='',cuPg=0,cart=[],cur='IQD',edit=null,custName='',custNote='',isq='',cuSelR=[],SESS=0,mgrOpen=new Set();
+const $=s=>document.querySelector(s);
+const fmt=(n,c)=>Number(n).toLocaleString('en',{maximumFractionDigits:c==='USD'?2:0})+(c==='USD'?' $':' د.ع');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const conv=(p,f,t)=>f===t?p:(f==='USD'?p*DB.rate:p/DB.rate);
+const mgrOf=u=>u?(u.role==='manager'?u:(u.by?DB.users.find(x=>x.u===u.by&&x.role==='manager')||null:null)):null;
+const frozen=()=>{const m=me&&me.role!=='owner'?mgrOf(me):null;return !!(m&&m.frozen)};
+const isBlocked=x=>{if(x.blocked)return true;const m=x.role==='owner'?null:mgrOf(x);return !!(m&&m.blocked)};
+const grpOut=x=>{const m=x.role==='owner'?null:mgrOf(x);return m?(m.outAt||0):0};
+const canW=()=>!frozen()&&['owner','manager','editor'].includes(me.role),isO=()=>me.role==='owner',isM=()=>!frozen()&&(me.role==='owner'||me.role==='manager');
+const WSK=['items','rcpts','logs','rate','seq','lastBackup'];let curWs='root';
+const newWs=()=>({items:[],rcpts:[],logs:[],rate:1500,seq:0,lastBackup:0});
+function W(){return DB.ws[curWs]||(DB.ws[curWs]=newWs())}
+function mount(d){d.ws=d.ws||{};if(!d.ws.root)d.ws.root={items:d.items||[],rcpts:d.rcpts||[],logs:d.logs||[],rate:d.rate||1500,seq:d.seq||0,lastBackup:d.lastBackup||0};
+ for(const k of WSK){delete d[k];Object.defineProperty(d,k,{get(){return W()[k]},set(v){W()[k]=v},enumerable:false,configurable:true})}
+ d.msgs=d.msgs||[];d.reqs=d.reqs||[];
+ d.users.forEach(u=>{if(!u.ws)u.ws=u.role==='manager'?u.u:(u.by&&d.users.some(x=>x.u===u.by&&x.role==='manager')?u.by:'root')});
+ for(const k in d.ws){const w=d.ws[k];WSK.forEach(f=>{if(w[f]==null)w[f]=f==='rate'?1500:(f==='seq'||f==='lastBackup'?0:[])});w.logs.forEach(l=>{if(!l.id)l.id=rnd()})}
+ return d}
+let _db=null,saving=false,dirty=false,saveErr=false,storeInfo='',storeWarn=false,sfq='';
+const PG=50,sq={inv:'',rc:'',log:''},pg={inv:0,rc:0,log:0};
+function idb(){return _db||(_db=new Promise((ok,no)=>{const r=indexedDB.open('rtbmhlk',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))}
+async function idbGet(k){const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('kv').objectStore('kv').get(k);t.onsuccess=()=>ok(t.result);t.onerror=()=>no(t.error)})}
+async function idbSet(k,v){const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>ok();t.onerror=()=>no(t.error);t.onabort=()=>no(t.error)})}
+function save(){dirty=true;if(!saving)flush()}
+async function flush(){saving=true;while(dirty){dirty=false;try{await idbSet('db',DB);warn(false)}catch(e){try{localStorage.setItem(KEY,JSON.stringify(DB));warn(false)}catch(e2){warn(true)}}}saving=false;updInfo()}
+function warn(e){saveErr=e;banner()}
+function banner(){const b=$('#bn');if(!b)return;let h='';
+ if(saveErr)h+='<div class="bn er">⚠ فشل حفظ البيانات! لا تغلق الصفحة، وخذ نسخة JSON فوراً من الإعدادات. قد تكون المساحة ممتلئة.</div>';
+ if(storeWarn)h+='<div class="bn wn">⚠ مساحة التخزين قاربت على الامتلاء. خذ نسخة JSON ثم قلّل الوصولات القديمة.</div>';
+ if(DB&&me&&frozen())h+='<div class="bn er">⛔ إدخال البيانات موقوف من الرئيس. يمكنك الاطلاع فقط حتى يُلغى الإيقاف.</div>';
+ if(DB&&me&&me.role==='manager')DB.msgs.filter(m=>m.to===me.u&&!m.read).forEach(m=>{h+=`<div class="bn wn">📩 ملاحظة من الرئيس: ${esc(m.text)} <button onclick="readNote('${m.id}')">تم</button></div>`});
+ if(DB&&me&&isM()){const d=Math.floor((Date.now()-(DB.lastBackup||DB.created||Date.now()))/864e5);if(d>=3&&(DB.items.length||DB.rcpts.length))h+=`<div class="bn wn">🔔 لم تأخذ نسخة JSON منذ ${d} يوماً. <button onclick="backup()">حفظ نسخة الآن</button></div>`}
+ b.innerHTML=h}
+async function updInfo(){try{if(navigator.storage&&navigator.storage.estimate){const e=await navigator.storage.estimate(),mb=e.usage/1048576,q=e.quota/1048576;storeInfo=mb.toFixed(1)+' MB مستعمل من '+(q>=1024?(q/1024).toFixed(1)+' GB':q.toFixed(0)+' MB');storeWarn=e.quota>0&&e.usage/e.quota>0.8;banner()}}catch(e){}}
+function storageCard(){return `<div class="card"><h3>حالة التخزين</h3><p>المواد: ${DB.items.length} — الوصولات: ${DB.rcpts.length} — سجل العمليات: ${DB.logs.length}</p><p class="m">${storeInfo?'المساحة: '+storeInfo:'تعذّر قياس المساحة'}</p><p class="m">آخر نسخة JSON: ${DB.lastBackup?new Date(DB.lastBackup).toLocaleString('ar-IQ'):'لم تؤخذ بعد'}</p></div>`}
+const SEL={inv:new Set(),rc:new Set(),log:new Set()};
+const LST={inv:()=>{const f=sq.inv.trim().toLowerCase();return f?DB.items.filter(i=>(i.name+' '+(i.code||'')+' '+(i.note||'')).toLowerCase().includes(f)):DB.items},
+ rc:()=>{const f=sq.rc.trim().toLowerCase();return f?DB.rcpts.filter(r=>String(r.no)===f||String(r.cust).toLowerCase().includes(f)):DB.rcpts},
+ log:()=>{const f=sq.log.trim().toLowerCase();return f?DB.logs.filter(l=>(l.u+' '+l.action+' '+l.detail).toLowerCase().includes(f)):DB.logs}};
+function selAll(k,on){LST[k]().forEach(x=>on?SEL[k].add(x.id):SEL[k].delete(x.id));refreshT(k)}
+function selOne(k,id,on){on?SEL[k].add(id):SEL[k].delete(id);refreshT(k)}
+function tbar(k,L){if(!isM())return'';const n=SEL[k].size,all=L.length&&L.every(x=>SEL[k].has(x.id));return `<div class="row" style="align-items:center"><label style="flex:0 0 auto"><input type="checkbox" ${all?'checked':''} onchange="selAll('${k}',this.checked)"> تحديد الكل (${L.length})</label><button class="dg" onclick="delSel('${k}')" ${n?'':'disabled'}>حذف المحدد (${n})</button></div>`}
+const cb=(k,id)=>isM()?`<td><input type="checkbox" ${SEL[k].has(id)?'checked':''} onchange="selOne('${k}','${id}',this.checked)"></td>`:'';
+function delSel(k){if(!isM())return;const ids=[...SEL[k]];if(!ids.length)return;const nm={inv:'مادة',rc:'وصل',log:'سجل'}[k];
+ if(!confirm('سيتم حذف '+ids.length+' ('+nm+') نهائياً. لا يمكن التراجع إلا باسترجاع نسخة JSON. متأكد؟'))return;
+ const s=new Set(ids);
+ if(k==='inv')DB.items=DB.items.filter(x=>!s.has(x.id));else if(k==='rc'){DB.rcpts=DB.rcpts.filter(x=>!s.has(x.id));if(!DB.rcpts.length)DB.seq=0}else DB.logs=DB.logs.filter(x=>!s.has(x.id));
+ SEL[k].clear();log('حذف جماعي','النوع: '+nm+' | العدد: '+ids.length);save();render()}
+function pager(k,total,size){const n=Math.max(1,Math.ceil(total/size));if(pg[k]>=n)pg[k]=n-1;return n>1?`<div class="row" style="margin-top:8px;justify-content:center;align-items:center"><button onclick="goPg('${k}',-1)" ${pg[k]===0?'disabled':''}>السابق</button><span class="m" style="flex:0 0 auto">${pg[k]+1} / ${n} (${total})</span><button onclick="goPg('${k}',1)" ${pg[k]>=n-1?'disabled':''}>التالي</button></div>`:''}
+function goPg(k,d){pg[k]+=d;refreshT(k)}
+function srch(k,v){sq[k]=v;pg[k]=0;SEL[k].clear();refreshT(k)}
+function refreshT(k){const el=$('#tbl');if(el)el.innerHTML={inv:itemsT,rc:rcT,log:logT}[k]()}
+function selOpts(){const f=sfq.trim().toLowerCase();let c=0,o='';for(const i of DB.items){if(i.qty>0&&(!f||(i.name+' '+(i.code||'')).toLowerCase().includes(f))){o+=`<option value="${i.id}">${esc(i.name)}${i.code?' ['+esc(i.code)+']':''} (${i.qty})</option>`;if(++c>=200)break}}return o||'<option value="">لا نتائج</option>'}
+function fillSel(){const s=$('#si');if(s)s.innerHTML=selOpts()}
+function log(action,detail){DB.logs.unshift({id:rnd(),t:Date.now(),u:me?me.name:'-',action,detail});if(DB.logs.length>20000)DB.logs.length=20000}
+async function hash(p,salt){const b=new TextEncoder().encode(salt+':'+p);if(crypto&&crypto.subtle){const h=await crypto.subtle.digest('SHA-256',b);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}let h=5381;for(const x of b)h=((h<<5)+h+x)>>>0;return String(h)}
+const rnd=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+function loginV(){const first=!DB||!DB.users.length;
+ $('#login').style.display='block';$('#credit').style.display='flex';$('#app').style.display='none';
+ $('#login').innerHTML=`<h3>📦 ${first?'إنشاء حساب الرئيس (أول مرة)':'تسجيل الدخول'}</h3>${first?'<input id="nm" placeholder="الاسم">':''}<input id="us" placeholder="اسم المستخدم" autocomplete="username"><input id="pw" type="password" placeholder="كلمة المرور${first?' (6 أحرف على الأقل)':''}" autocomplete="current-password"><button class="pr" style="width:100%" onclick="${first?'setup()':'signIn()'}">${first?'إنشاء':'دخول'}</button>${first?'<p class="m">يمكنك استرجاع نسخة احتياطية بعد الدخول من الإعدادات.</p>':''}<p id="err" class="m" style="color:var(--d)"></p>`}
+async function setup(){const u=$('#us').value.trim(),p=$('#pw').value,n=($('#nm').value||u).trim();if(!u||p.length<6)return $('#err').textContent='اكتب اسماً وكلمة مرور (6 أحرف فأكثر)';
+ const salt=rnd();DB=mount({users:[{u,name:n,role:'owner',ws:'root',salt,hash:await hash(p,salt)}],created:Date.now()});me=DB.users[0];SESS=Date.now();log('إنشاء النظام','');save();keepLogin(me);start()}
+async function signIn(){const u=$('#us').value.trim(),x=DB.users.find(z=>z.u===u);
+ if(!x||(await hash($('#pw').value,x.salt))!==x.hash){$('#err').textContent='بيانات الدخول غير صحيحة';return}
+ if(isBlocked(x)){$('#err').textContent='هذا الحساب موقوف من الرئيس';return}
+ me=x;SESS=Date.now();x.last=SESS;keepLogin(x);log('تسجيل دخول','');save();start()}
+function keepLogin(x){try{localStorage.setItem('jard_s',JSON.stringify({u:x.u,h:x.hash,t:SESS||Date.now()}))}catch(e){}}
+function savedUser(){try{const t=JSON.parse(localStorage.getItem('jard_s')||'null');const x=t&&DB&&DB.users.find(z=>z.u===t.u&&z.hash===t.h);if(!x||isBlocked(x)||(t.t||0)<grpOut(x))return null;SESS=t.t||Date.now();return x}catch(e){return null}}
+function signOut(){sessionStorage.clear();try{localStorage.removeItem('jard_s')}catch(e){}location.reload()}
+function start(){curWs=me.ws||'root';$('#login').style.display='none';$('#credit').style.display='none';$('#app').style.display='block';$('#who').textContent=me.name+' — '+ROLE[me.role];render()}
+const tabs=()=>({inv:'المخزن',out:'سحب / وصل',rc:'الوصولات',cu:'سجل الزبائن',...(me.role!=='viewer'?{log:'السجل'}:{}),...(me.role==='owner'?{users:'المستخدمون'}:{}),set:'الإعدادات'});
+function render(){const cu=DB.users.find(x=>x.u===me.u);if(!cu||isBlocked(cu)||SESS<grpOut(cu)){signOut();return}banner();$('#nav').innerHTML=Object.entries(tabs()).map(([k,v])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';if(tab==='cu')cuSel=null;render()">${v}</button>`).join('');
+ $('#v').innerHTML={inv:invV,out:outV,rc:rcV,cu:custV,log:logV,users:usersV,set:setV}[tab]()}
+function itemsT(){const L=LST.inv(),pr=pager('inv',L.length,PG),s=pg.inv*PG;
+ return tbar('inv',L)+`<div class="sc"><table><tr>${isM()?'<th></th>':''}<th>المادة</th><th>الكود</th><th>العدد</th><th>السعر</th><th>القيمة</th><th>ملاحظات</th><th></th></tr>${L.slice(s,s+PG).map(i=>`<tr>${cb('inv',i.id)}<td>${esc(i.name)}</td><td class="m">${esc(i.code||'')}</td><td class="${i.qty<=3?'low':''}">${i.qty}</td><td>${fmt(i.price,i.cur)}</td><td>${fmt(i.price*i.qty,i.cur)}</td><td class="m" style="white-space:normal;min-width:120px">${esc(i.note||'')}</td><td>${canW()?`<button onclick="edit='${i.id}';render();scrollTo(0,0)">تعديل</button> `:''}${isM()?`<button class="dg" onclick="delItem('${i.id}')">حذف</button>`:''}</td></tr>`).join('')||'<tr><td colspan=8 class="m">لا توجد مواد</td></tr>'}</table></div>`+pr}
+function invV(){const e=edit?DB.items.find(i=>i.id===edit):null;
+ return (canW()?`<div class="card"><h3>${e?'تعديل مادة':'إضافة مادة'}</h3><div class="row"><input id="n" placeholder="اسم المادة" value="${esc(e?.name)}"><input id="cd" placeholder="كود العنصر (اختياري)" value="${esc(e?.code)}"><input id="nt" placeholder="ملاحظات (اختياري)" value="${esc(e?.note)}"><input id="q" type="number" placeholder="العدد" value="${e?.qty??''}"><input id="p" type="number" step="any" placeholder="سعر القطعة" value="${e?.price??''}"><select id="c"><option ${e?.cur==='USD'?'selected':''}>USD</option><option ${e?.cur==='IQD'?'selected':''}>IQD</option></select></div><button class="pr" onclick="saveItem()">${e?'حفظ التعديل':'إضافة'}</button> ${e?'<button onclick="edit=null;render()">إلغاء</button>':''}</div>`:'')+
+ `<div class="card"><input placeholder="🔍 بحث بالاسم أو الكود" value="${esc(sq.inv)}" oninput="srch('inv',this.value)" style="width:100%;margin-bottom:8px"><div id="tbl">${itemsT()}</div></div>`}
+function saveItem(){const name=$('#n').value.trim(),qty=parseInt($('#q').value),price=+$('#p').value,c=$('#c').value,code=($('#cd').value||'').trim(),note=($('#nt').value||'').trim();
+ if(!name||isNaN(qty)||isNaN(price)||qty<0||price<0)return alert('تأكد من البيانات');
+ if(code&&DB.items.some(x=>x.id!==edit&&(x.code||'').trim().toLowerCase()===code.toLowerCase()))return alert('هذا الكود مستخدم لمادة أخرى. اختر كوداً مختلفاً.');
+ if(edit){const i=DB.items.find(x=>x.id===edit);Object.assign(i,{name,code,note,qty,price,cur:c});log('تعديل مادة',`${name}${code?' ['+code+']':''} | ${qty} | ${price} ${c}`)}
+ else{DB.items.push({id:rnd(),name,code,note,qty,price,cur:c});log('إضافة مادة',`${name}${code?' ['+code+']':''} | ${qty} | ${price} ${c}`)}
+ edit=null;save();render()}
+function delItem(id){const i=DB.items.find(x=>x.id===id);if(!confirm('حذف '+i.name+'؟'))return;DB.items=DB.items.filter(x=>x.id!==id);log('حذف مادة',i.name);save();render()}
+function outV(){if(!canW())return'<div class="card m">ليس لديك صلاحية السحب</div>';const tot=cart.reduce((s,l)=>s+conv(l.price,l.cur,cur)*l.n,0);
+ return `<div class="card"><h3>وصل سحب جديد</h3><div class="row"><input id="cu" placeholder="اسم الزبون" value="${esc(custName)}" oninput="custName=this.value"><select onchange="cur=this.value;render()"><option ${cur==='IQD'?'selected':''}>IQD</option><option ${cur==='USD'?'selected':''}>USD</option></select></div>
+ <input id="cn" placeholder="ملاحظات للزبون (اختياري)" value="${esc(custNote)}" oninput="custNote=this.value"><div class="row"><input id="sf" placeholder="🔍 ابحث بالاسم أو الكود" value="${esc(sfq)}" oninput="sfq=this.value;fillSel()"><select id="si">${selOpts()}</select><input id="sn" type="number" min="1" value="1"><button onclick="addCart()">إضافة للوصل</button></div>
+ <div class="sc"><table>${cart.map((l,k)=>`<tr><td>${esc(l.name)}${l.note?` <span class="m">(${esc(l.note)})</span>`:''}</td><td>${l.n}×</td><td>${fmt(conv(l.price,l.cur,cur),cur)}</td><td>${fmt(conv(l.price,l.cur,cur)*l.n,cur)}</td><td><button class="dg" onclick="cart.splice(${k},1);render()">✕</button></td></tr>`).join('')}</table></div>
+ <h3 style="margin-top:10px">المجموع: ${fmt(tot,cur)}</h3><button class="pr" onclick="issue()" ${cart.length?'':'disabled'}>إصدار الوصل وخصم المخزن</button></div>`}
+function addCart(){const i=DB.items.find(x=>x.id===$('#si').value),n=parseInt($('#sn').value);if(!i||!(n>=1))return;
+ if(cart.filter(l=>l.id===i.id).reduce((s,l)=>s+l.n,0)+n>i.qty)return alert('الكمية غير متوفرة');cart.push({id:i.id,name:i.name,note:i.note||'',price:i.price,cur:i.cur,n});render()}
+function issue(){const cust=custName.trim()||'زبون';
+ for(const l of cart){const i=DB.items.find(x=>x.id===l.id);if(!i||i.qty<l.n)return alert('نقص في '+l.name)}
+ const lines=cart.map(l=>({name:l.name,note:l.note||'',n:l.n,unit:conv(l.price,l.cur,cur),sum:conv(l.price,l.cur,cur)*l.n})),total=lines.reduce((s,l)=>s+l.sum,0);
+ cart.forEach(l=>{DB.items.find(x=>x.id===l.id).qty-=l.n});
+ if(!DB.rcpts.length)DB.seq=0;const no=++DB.seq;DB.rcpts.unshift({id:rnd(),no,t:Date.now(),cust,cnote:custNote.trim(),cur,rate:DB.rate,lines,total,u:me.name});
+ log('إصدار وصل',`#${no} | ${cust} | ${fmt(total,cur)}`);save();cart=[];custName='';custNote='';tab='rc';render()}
+function rcCanvas(r){const L=r.lines,CN=(r.cnote||'').match(/[\s\S]{1,55}/g)||[],CE=Math.min(CN.length,3)*30,W=800,H=CE+350+L.reduce((t,l)=>t+46+(l.note?28:0),0),cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d'),F='system-ui,Tahoma,Arial,sans-serif';x.direction='rtl';
+ x.fillStyle='#fff';x.fillRect(0,0,W,H);x.strokeStyle='#999';x.lineWidth=2;x.strokeRect(12,12,W-24,H-24);
+ x.fillStyle='#111';x.textAlign='center';x.font='bold 36px '+F;x.fillText('وصل رقم '+r.no,W/2,70);
+ x.textAlign='right';x.font='22px '+F;x.fillText('الزبون: '+r.cust,W-40,120);x.fillText('التاريخ: '+new Date(r.t).toLocaleString('ar-IQ'),W-40,156);x.font='20px '+F;x.fillStyle='#555';CN.slice(0,3).forEach((t,i)=>x.fillText((i?'':'ملاحظات: ')+t,W-40,192+i*30));x.fillStyle='#111';x.font='22px '+F;
+ let y=225+CE;x.font='bold 20px '+F;x.fillStyle='#555';x.fillText('المادة',760,y);x.fillText('العدد',430,y);x.fillText('السعر',330,y);x.fillText('المجموع',190,y);
+ x.beginPath();x.moveTo(40,y+14);x.lineTo(W-40,y+14);x.stroke();x.fillStyle='#111';x.font='21px '+F;
+ L.forEach(l=>{y+=46;x.fillText(l.name,760,y,300);x.fillText(String(l.n),430,y);x.fillText(fmt(l.unit,r.cur),330,y);x.fillText(fmt(l.sum,r.cur),190,y);if(l.note){x.font='17px '+F;x.fillStyle='#555';x.fillText('ملاحظة: '+l.note,760,y+24,680);x.fillStyle='#111';x.font='21px '+F;y+=28}});
+ y+=40;x.beginPath();x.moveTo(40,y);x.lineTo(W-40,y);x.stroke();y+=50;x.font='bold 30px '+F;x.fillText('الإجمالي: '+fmt(r.total,r.cur),W-40,y);return cv}
+const toImg=cv=>({jb:atob(cv.toDataURL('image/jpeg',0.9).split(',')[1]),W:cv.width,H:cv.height});
+function pdfPages(imgs){const e=new TextEncoder(),parts=[],off=[];let len=0;const pw=595;
+ const add=b=>{if(typeof b==='string')b=e.encode(b);parts.push(b);len+=b.length};
+ const obj=(n,s)=>{off[n]=len;add(n+' 0 obj'+NL+s+NL+'endobj'+NL)};
+ const n=imgs.length,kids=imgs.map((_,i)=>(3+3*i)+' 0 R').join(' ');
+ add('%PDF-1.4'+NL);obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,`<< /Type /Pages /Kids [${kids}] /Count ${n} >>`);
+ imgs.forEach((im,i)=>{const jb=im.jb,W=im.W,H=im.H,ph=Math.round(pw*H/W),b=3+3*i;
+  obj(b,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /I${i} ${b+1} 0 R >> >> /Contents ${b+2} 0 R >>`);
+  off[b+1]=len;add((b+1)+' 0 obj'+NL+`<< /Type /XObject /Subtype /Image /Width ${W} /Height ${H} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jb.length} >>`+NL+'stream'+NL);add(Uint8Array.from(jb,c=>c.charCodeAt(0)));add(NL+'endstream'+NL+'endobj'+NL);
+  const cs=`q ${pw} 0 0 ${ph} 0 0 cm /I${i} Do Q`;obj(b+2,`<< /Length ${cs.length} >>`+NL+'stream'+NL+cs+NL+'endstream')});
+ const tot=3+3*n,xo=len;let xr='xref'+NL+'0 '+tot+NL+'0000000000 65535 f '+NL;for(let i=1;i<tot;i++)xr+=String(off[i]).padStart(10,'0')+' 00000 n '+NL;
+ add(xr+'trailer'+NL+`<< /Size ${tot} /Root 1 0 R >>`+NL+'startxref'+NL+xo+NL+'%%EOF');return new Blob(parts,{type:'application/pdf'})}
+function pdfFrom(cv){return pdfPages([toImg(cv)])}
+function tablePdf(title,head,rows,wd){const W=1240,H=1754,M=60,CW=W-2*M,RH=44,TOP=190,BOT=90,per=Math.floor((H-TOP-BOT-RH)/RH),F='system-ui,Tahoma,Arial,sans-serif',pages=[],np=Math.max(1,Math.ceil(rows.length/per));
+ const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.direction='rtl';
+ const fit=(t,w)=>{t=String(t??'');if(x.measureText(t).width<=w)return t;while(t.length>1&&x.measureText(t+'…').width>w)t=t.slice(0,-1);return t+'…'};
+ for(let p=0;p<np;p++){
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#111';x.textAlign='right';x.font='bold 40px '+F;x.fillText(title,W-M,90);
+  x.font='22px '+F;x.fillStyle='#666';x.fillText('التاريخ: '+new Date().toLocaleString('ar-IQ')+' — عدد السجلات: '+rows.length,W-M,128);
+  let xr=W-M;const cols=wd.map(f=>{const w=CW*f,r=xr-8;xr-=w;return{r,w:w-16}});
+  let y=TOP;x.fillStyle='#e3efec';x.fillRect(M,y-30,CW,RH);x.fillStyle='#0b4f49';x.font='bold 22px '+F;
+  head.forEach((h,i)=>x.fillText(h,cols[i].r,y));x.font='21px '+F;
+  rows.slice(p*per,(p+1)*per).forEach((r,k)=>{y+=RH;if(k%2===0){x.fillStyle='#f3f5f7';x.fillRect(M,y-30,CW,RH)}x.fillStyle='#111';r.forEach((c,i)=>x.fillText(fit(c,cols[i].w),cols[i].r,y))});
+  x.fillStyle='#888';x.textAlign='center';x.font='20px '+F;x.fillText((p+1)+' / '+np,W/2,H-40);pages.push(toImg(cv))}
+ return pdfPages(pages)}
+async function saveFile(name,blob){try{if(window.claude&&window.claude.use){const d=await window.claude.use('downloads');if(d){await d.save({filename:name,data:blob});return}}}catch(e){}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+async function dl(id,kind){const r=DB.rcpts.find(x=>x.id===id),cv=rcCanvas(r);
+ if(kind==='pdf')saveFile('receipt-'+r.no+'.pdf',pdfFrom(cv));else saveFile('receipt-'+r.no+'.png',await new Promise(ok=>cv.toBlob(ok,'image/png')))}
+const rcNotes=r=>[r.cnote?'الزبون: '+r.cnote:'',...r.lines.filter(l=>l.note).map(l=>l.name+': '+l.note)].filter(Boolean).join(' | ');
+function rcT(){const L=LST.rc(),pr=pager('rc',L.length,30),s=pg.rc*30;
+ return tbar('rc',L)+`<div class="sc"><table><tr>${isM()?'<th></th>':''}<th>#</th><th>الزبون</th><th>التاريخ</th><th>الإجمالي</th><th>ملاحظات</th><th></th></tr>${L.slice(s,s+30).map(r=>`<tr>${cb('rc',r.id)}<td>${r.no}</td><td>${esc(r.cust)}</td><td>${new Date(r.t).toLocaleDateString('ar-IQ')}</td><td>${fmt(r.total,r.cur)}</td><td class="m" style="white-space:normal;min-width:140px">${esc(rcNotes(r))}</td><td><button onclick="dl('${r.id}','pdf')">PDF</button> <button onclick="dl('${r.id}','png')">صورة</button></td></tr>`).join('')||'<tr><td colspan=7 class="m">لا توجد وصولات</td></tr>'}</table></div>`+pr}
+function rcV(){return `<div class="card"><input placeholder="🔍 بحث برقم الوصل أو اسم الزبون" value="${esc(sq.rc)}" oninput="srch('rc',this.value)" style="width:100%;margin-bottom:8px"><input id="isq" placeholder="🔍 بحث باسم عنصر: يظهر كل زبون وعدد ما اشتراه" value="${esc(isq)}" oninput="isrch(this.value)" style="width:100%;margin-bottom:8px"><div id="itbl">${itemSrchT()}</div><div id="tbl">${rcT()}</div></div>`}
+function logT(){const L=LST.log(),pr=pager('log',L.length,50),s=pg.log*50;
+ return tbar('log',L)+`<div class="sc"><table><tr>${isM()?'<th></th>':''}<th>الوقت</th><th>المستخدم</th><th>العملية</th><th>التفاصيل</th></tr>${L.slice(s,s+50).map(l=>`<tr>${cb('log',l.id)}<td>${new Date(l.t).toLocaleString('ar-IQ')}</td><td>${esc(l.u)}</td><td>${esc(l.action)}</td><td class="m">${esc(l.detail)}</td></tr>`).join('')||'<tr><td colspan=5 class="m">فارغ</td></tr>'}</table></div>`+pr}
+function logV(){return `<div class="card"><input placeholder="🔍 بحث في السجل" value="${esc(sq.log)}" oninput="srch('log',this.value)" style="width:100%;margin-bottom:8px"><div id="tbl">${logT()}</div></div>`}
+function setV(){let h=`<div class="card"><h3>سعر الصرف</h3><div class="row"><span>1 دولار =</span><input id="rt" type="number" value="${DB.rate}" ${isM()?'':'disabled'}><span>دينار</span></div>${isM()?'<button class="pr" onclick="saveRate()">حفظ</button>':'<p class="m">الرئيس والمدير فقط يغيّران سعر الصرف</p>'}<p class="m">يُطبّق على الوصولات الجديدة فقط.</p></div>`;
+ if(me.role==='manager')h+=teamCard();
+ h+=`<div class="card"><h3>تقارير للطباعة</h3><div class="row"><select id="rp"><option value="30">الوصولات والسجل: آخر 30 يوماً</option><option value="90">آخر 90 يوماً</option><option value="365">آخر سنة</option><option value="0">كل الفترات</option></select></div><div class="sc"><table>${[['items','المخزن'],['rc','الوصولات'],...(me.role!=='viewer'?[['log','السجل']]:[])].map(([k,n])=>`<tr><td>${n}</td><td><button class="pr" onclick="exp('${k}','pdf')">تنزيل PDF للطباعة</button></td></tr>`).join('')}</table></div>`;
+ if(isM())h+=`</div><div class="card"><h3>نسخة احتياطية (JSON)</h3><div class="row"><button class="pr" onclick="backup()">حفظ نسخة كاملة (JSON)</button><button onclick="$('#rf').click()">استرجاع نسخة</button><input id="rf" type="file" accept=".json" style="display:none" onchange="restore(this.files[0])"></div><p class="m">⚠ البيانات تُحفظ داخل هذا المتصفح فقط. خذ نسخة كاملة بانتظام، فمسح بيانات المتصفح يحذف كل شيء.<br>النسخة تحفظ البيانات فقط (المخزن والوصولات والسجل)، ولا تحفظ الحسابات ولا بيانات الدخول والخروج.</p>`;
+ return h+'</div>'+storageCard()}
+const ckey=r=>(String(r.cust||'').trim()||'زبون').toLowerCase();
+function custGroups(){const m=new Map();for(const r of DB.rcpts){const k=ckey(r);let g=m.get(k);if(!g){g={k,name:String(r.cust||'').trim()||'زبون',list:[],tot:{},last:0};m.set(k,g)}g.list.push(r);g.tot[r.cur]=(g.tot[r.cur]||0)+r.total;if(r.t>g.last)g.last=r.t}return [...m.values()].sort((a,b)=>b.last-a.last)}
+const totStr=t=>{const p=['IQD','USD'].filter(c=>t[c]).map(c=>fmt(t[c],c));return p.length?p.join(' + '):fmt(0,'IQD')};
+const itemsStr=r=>r.lines.map(l=>l.name+' x'+l.n+(l.note?' ('+l.note+')':'')).join(' | ');
+const cuId=k=>encodeURIComponent(k).replace(/'/g,'%27');
+const cuGet=id=>{const k=decodeURIComponent(id);return custGroups().find(x=>x.k===k)};
+function cuList(){const f=cuq.trim().toLowerCase();return custGroups().filter(g=>!f||g.k.includes(f))}
+function cuT(){const L=cuList(),P=30,n=Math.max(1,Math.ceil(L.length/P));if(cuPg>=n)cuPg=n-1;const s=cuPg*P;
+ return `<div class="sc"><table><tr><th>الزبون</th><th>عدد الوصولات</th><th>الإجمالي</th><th>آخر وصل</th><th></th></tr>${L.slice(s,s+P).map(g=>`<tr><td>${esc(g.name)}</td><td>${g.list.length}</td><td>${totStr(g.tot)}</td><td class="m">${new Date(g.last).toLocaleDateString('ar-IQ')}</td><td><button onclick="cuOpen('${cuId(g.k)}')">عرض</button> <button onclick="cuPdf('${cuId(g.k)}')">PDF</button></td></tr>`).join('')||'<tr><td colspan=5 class="m">لا يوجد زبائن</td></tr>'}</table></div>`+(n>1?`<div class="row" style="margin-top:8px;justify-content:center;align-items:center"><button onclick="cuGo(-1)" ${cuPg===0?'disabled':''}>السابق</button><span class="m" style="flex:0 0 auto">${cuPg+1} / ${n} (${L.length})</span><button onclick="cuGo(1)" ${cuPg>=n-1?'disabled':''}>التالي</button></div>`:'')}
+function cuRefresh(){const e=$('#ctbl');if(e)e.innerHTML=cuT()}
+function cuSrch(v){cuq=v;cuPg=0;cuRefresh()}
+function cuGo(d){cuPg+=d;cuRefresh()}
+function cuOpen(id){cuSel=decodeURIComponent(id);cuSelR=[];render();scrollTo(0,0)}
+function cuBack(){cuSel=null;cuSelR=[];render()}
+function custV(){
+ if(cuSel){const g=custGroups().find(x=>x.k===cuSel);
+  if(g){const LN=cuLines(g);return `<div class="card"><div class="row" style="align-items:center"><button onclick="cuBack()" style="flex:0 0 auto">← رجوع</button><h3 style="margin:0">${esc(g.name)}</h3></div><p class="m">عدد الوصولات: ${g.list.length} — عدد العناصر: ${LN.length} — الإجمالي: ${totStr(g.tot)}</p><button class="pr" onclick="cuPdf('${cuId(g.k)}')">تنزيل PDF لهذا الزبون</button>${isM()?`<div class="row" style="margin-top:8px"><button id="cmb" onclick="cuMerge()" ${cuSelR.length<2?'disabled':''}>دمج الوصولات المحددة (${cuSelR.length})</button><button onclick="cuAll()">تحديد الكل</button></div><p class="m">لدمج وصولات هذا الزبون في وصل واحد: علّم الوصولات من العمود الأخير ثم اضغط دمج.</p>`:''}</div><div class="card"><div class="sc"><table><tr><th>#</th><th>المادة</th><th>العدد</th><th>السعر</th><th>المجموع</th><th>التاريخ</th><th>وصل</th><th>ملاحظات</th><th>ملاحظة الزبون</th><th></th></tr>${LN.map(x=>`<tr${x.first&&x.n>1?' style="border-top:2px solid var(--b)"':''}><td>${x.n}</td><td>${esc(x.l.name)}</td><td>${x.l.n}</td><td>${fmt(x.l.unit,x.r.cur)}</td><td>${fmt(x.l.sum,x.r.cur)}</td><td class="m">${new Date(x.r.t).toLocaleDateString('ar-IQ')}</td><td>${x.r.no}</td><td class="m" style="white-space:normal;min-width:120px">${esc(x.l.note||'')}</td><td class="m" style="white-space:normal;min-width:120px">${x.first?esc(x.r.cnote||''):''}</td><td>${x.first?`${isM()?`<input type="checkbox" ${cuSelR.includes(x.r.id)?'checked':''} onchange="cuTog('${x.r.id}',this.checked)"> `:''}<button onclick="dl('${x.r.id}','pdf')">PDF</button> <button onclick="dl('${x.r.id}','png')">صورة</button>`:''}</td></tr>`).join('')||'<tr><td colspan=10 class="m">لا توجد عناصر</td></tr>'}</table></div></div>`}
+  cuSel=null}
+ return `<div class="card"><h3>سجل الزبائن</h3><div class="row"><button class="pr" onclick="cuPdfAll()">PDF كامل (كل الوصولات)</button><button onclick="cuPdfSum()">PDF ملخص الزبائن</button></div><input placeholder="🔍 بحث باسم الزبون" value="${esc(cuq)}" oninput="cuSrch(this.value)" style="width:100%;margin:8px 0"><div id="ctbl">${cuT()}</div></div>`}
+const cuStamp=()=>new Date().toISOString().slice(0,10);
+function cuLines(g){let n=0;const o=[];g.list.forEach(r=>r.lines.forEach((l,i)=>o.push({n:++n,r,l,first:i===0})));return o}
+const cuD=t=>new Date(t).toLocaleDateString('en-GB');
+function cuPdf(id){const g=cuGet(id);if(!g)return;
+ const rows=cuLines(g).map(x=>[x.n,x.l.name,x.l.n,fmt(x.l.unit,x.r.cur),fmt(x.l.sum,x.r.cur),cuD(x.r.t),x.r.no,x.l.note||'',x.first?(x.r.cnote||''):'']);rows.push(['','الإجمالي: '+totStr(g.tot),'','','','','','','']);
+ saveFile('customer-'+g.name.replace(/[^\w\u0600-\u06FF]+/g,'_')+'-'+cuStamp()+'.pdf',tablePdf('سجل الزبون: '+g.name,['#','المادة','العدد','السعر','المجموع','التاريخ','وصل','ملاحظات','ملاحظة الزبون'],rows,[.05,.17,.06,.11,.11,.1,.06,.17,.17]));
+ log('تصدير','سجل الزبون: '+g.name);save()}
+function cuPdfAll(){const G=custGroups().sort((a,b)=>a.name.localeCompare(b.name,'ar'));if(!G.length)return alert('لا توجد وصولات');
+ const rows=[];G.forEach(g=>cuLines(g).forEach(x=>rows.push([g.name,x.n,x.l.name,x.l.n,fmt(x.l.unit,x.r.cur),fmt(x.l.sum,x.r.cur),cuD(x.r.t),x.r.no,x.l.note||'',x.first?(x.r.cnote||''):''])));
+ saveFile('customers-all-'+cuStamp()+'.pdf',tablePdf('سجل الزبائن الكامل',['الزبون','#','المادة','العدد','السعر','المجموع','التاريخ','وصل','ملاحظات','ملاحظة الزبون'],rows,[.11,.04,.14,.05,.1,.1,.09,.05,.16,.16]));
+ log('تصدير','سجل الزبائن الكامل');save()}
+function cuPdfSum(){const G=custGroups();if(!G.length)return alert('لا توجد وصولات');
+ const rows=G.map(g=>[g.name,g.list.length,totStr(g.tot),new Date(g.last).toLocaleDateString('en-GB')]);
+ saveFile('customers-summary-'+cuStamp()+'.pdf',tablePdf('ملخص الزبائن',['الزبون','عدد الوصولات','الإجمالي','آخر وصل'],rows,[.3,.15,.35,.2]));
+ log('تصدير','ملخص الزبائن');save()}
+function calcOpen(){$('#cm').style.display='flex';$('#cc_t').focus()}
+function calcClose(){$('#cm').style.display='none'}
+function calcP(){const t=+$('#cc_t').value,q=+$('#cc_q').value,c=$('#cc_c').value,r=$('#cc_r'),o=c==='USD'?'IQD':'USD';
+ if(!(t>0)||!(q>0)){r.textContent='سعر القطعة الواحدة سيظهر هنا';return}
+ const f=(v,k)=>Number(v).toLocaleString('en',{maximumFractionDigits:k==='USD'?4:2})+(k==='USD'?' $':' د.ع'),u=t/q;
+ r.innerHTML='سعر القطعة الواحدة: <b>'+f(u,c)+'</b> ≈ '+f(conv(u,c,o),o)}
+function itemHits(){const f=isq.trim().toLowerCase();if(!f)return[];const m=new Map();
+ for(const r of DB.rcpts){const ck=ckey(r),cn=String(r.cust||'').trim()||'زبون';
+  for(const l of r.lines){const nm=String(l.name).trim();if(!nm.toLowerCase().includes(f))continue;
+   const k=ck+'\u0001'+nm.toLowerCase();let g=m.get(k);
+   if(!g){g={ck,cust:cn,item:nm,n:0,rc:new Set(),last:0,sum:{}};m.set(k,g)}
+   g.n+=l.n;g.rc.add(r.id);if(r.t>g.last)g.last=r.t;g.sum[r.cur]=(g.sum[r.cur]||0)+l.sum}}
+ return [...m.values()].sort((a,b)=>a.item.localeCompare(b.item,'ar')||b.n-a.n)}
+function itemSrchT(){const H=itemHits();if(!isq.trim())return'';if(!H.length)return'<p class="m">لا توجد مبيعات بهذا الاسم</p>';
+ const T=new Map();H.forEach(g=>{const t=T.get(g.item.toLowerCase())||{item:g.item,n:0,c:new Set()};t.n+=g.n;t.c.add(g.ck);T.set(g.item.toLowerCase(),t)});
+ const sm=[...T.values()].map(t=>'<b>'+esc(t.item)+'</b>: '+t.n+' قطعة لـ '+t.c.size+' زبون').join(' &nbsp;|&nbsp; ');
+ return `<div class="card" style="margin:0 0 8px"><p>${sm}</p><button onclick="isPdf()">PDF نتائج البحث</button><div class="sc"><table><tr><th>#</th><th>الزبون</th><th>العنصر</th><th>العدد</th><th>الإجمالي</th><th>الوصولات</th><th>آخر تاريخ</th><th></th></tr>${H.slice(0,200).map((g,i)=>`<tr><td>${i+1}</td><td>${esc(g.cust)}</td><td>${esc(g.item)}</td><td><b>${g.n}</b></td><td>${totStr(g.sum)}</td><td>${g.rc.size}</td><td class="m">${new Date(g.last).toLocaleDateString('ar-IQ')}</td><td><button onclick="tab='cu';cuOpen('${cuId(g.ck)}')">السجل</button></td></tr>`).join('')}</table></div>${H.length>200?'<p class="m">يعرض أول 200 نتيجة، ضيّق البحث لرؤية الباقي</p>':''}</div>`}
+function isrch(v){isq=v;const e=$('#itbl');if(e)e.innerHTML=itemSrchT()}
+function isPdf(){const H=itemHits();if(!H.length)return alert('لا توجد نتائج');
+ const rows=H.map(g=>[g.cust,g.item,g.n,totStr(g.sum),g.rc.size,new Date(g.last).toLocaleDateString('en-GB')]);
+ saveFile('item-sales-'+new Date().toISOString().slice(0,10)+'.pdf',tablePdf('مبيعات العنصر: '+isq.trim(),['الزبون','العنصر','العدد','الإجمالي','الوصولات','آخر تاريخ'],rows,[.22,.24,.1,.2,.1,.14]));
+ log('تصدير','مبيعات العنصر: '+isq.trim());save()}
+function cuMbtn(){const b=$('#cmb');if(b){b.textContent='دمج الوصولات المحددة ('+cuSelR.length+')';b.disabled=cuSelR.length<2}}
+function cuTog(id,on){cuSelR=cuSelR.filter(x=>x!==id);if(on)cuSelR.push(id);cuMbtn()}
+function cuAll(){const g=custGroups().find(x=>x.k===cuSel);if(!g)return;cuSelR=cuSelR.length===g.list.length?[]:g.list.map(r=>r.id);render()}
+function mergeBuild(R){const lines=[];
+ for(const r of R)for(const l of r.lines){const k=String(l.name).trim().toLowerCase(),f=lines.find(x=>String(x.name).trim().toLowerCase()===k&&Math.abs(x.unit-l.unit)<1e-6);
+  if(f){f.n+=l.n;f.sum+=l.sum;if(l.note&&!String(f.note||'').split(' / ').includes(l.note))f.note=(f.note?f.note+' / ':'')+l.note}
+  else lines.push({...l})}
+ const cn=[...new Set(R.map(r=>(r.cnote||'').trim()).filter(Boolean))].join(' | ');
+ return {lines,total:lines.reduce((t,l)=>t+l.sum,0),cnote:cn}}
+function cuMerge(){if(!isM())return;const g=custGroups().find(x=>x.k===cuSel);if(!g)return;
+ const ids=cuSelR.filter(id=>g.list.some(r=>r.id===id));if(ids.length<2)return alert('حدد وصلين على الأقل');
+ const R=DB.rcpts.filter(r=>ids.includes(r.id)).sort((a,b)=>a.t-b.t||a.no-b.no);
+ if(new Set(R.map(r=>r.cur)).size>1)return alert('لا يمكن دمج وصولات بعملات مختلفة (دينار ودولار). حدد وصولات بعملة واحدة.');
+ const base=R[0],M=mergeBuild(R);
+ if(!confirm('دمج الوصولات '+R.map(r=>'#'+r.no).join(' + ')+' للزبون «'+g.name+'» في وصل واحد برقم #'+base.no+'.\nعدد العناصر بعد الدمج: '+M.lines.length+'\nالإجمالي: '+fmt(M.total,base.cur)+'\nالمخزن لا يتغير. لا يمكن التراجع إلا باسترجاع نسخة JSON. متأكد؟'))return;
+ const rest=new Set(R.slice(1).map(r=>r.id)),merged={...base,t:R[R.length-1].t,lines:M.lines,total:M.total,cnote:M.cnote};
+ DB.rcpts=DB.rcpts.filter(r=>!rest.has(r.id)).map(r=>r.id===base.id?merged:r).sort((a,b)=>b.t-a.t||b.no-a.no);
+ log('دمج وصولات',R.map(r=>'#'+r.no).join(' + ')+' ← #'+base.no+' | '+g.name+' | '+fmt(M.total,base.cur));
+ cuSelR=[];save();render()}
+const ROLE={owner:'رئيس',manager:'مدير',editor:'مدخل',viewer:'عرض'},TEAM={editor:2,viewer:1};
+const byName=u=>(DB.users.find(z=>z.u===u)||{}).name||u;
+const myTeam=()=>DB.users.filter(x=>x.by===me.u),myReqs=()=>(DB.reqs||[]).filter(r=>r.by===me.u);
+const teamCount=role=>myTeam().filter(x=>x.role===role).length+myReqs().filter(r=>r.status==='pending'&&r.role===role).length;
+const teamN=role=>myTeam().filter(x=>x.role===role).length;
+const myMsgs=()=>DB.msgs.filter(m=>m.to===me.u).sort((a,b)=>b.t-a.t);
+function teamCard(){return `<div class="card"><h3>حسابات فريقي</h3><p class="m">المسموح لك: مدخلا بيانات (${teamN('editor')}/2) وحساب قراءة واحد (${teamN('viewer')}/1). مخزنك ووصولاتك وسجلك مشتركة بينك وبين تابعيك فقط.</p><div class="sc"><table>${myTeam().map(u=>`<tr><td>${esc(u.name)} <span class="m">(${esc(u.u)})</span>${u.blocked?' <b style="color:#c0392b">موقوف</b>':''}</td><td>${ROLE[u.role]}</td><td>${isM()?`<button class="dg" onclick="delMember('${esc(u.u)}')">حذف</button>`:''}</td></tr>`).join('')||'<tr><td class="m">لا توجد حسابات بعد</td></tr>'}</table></div>${isM()?`<div class="row" style="margin-top:10px"><input id="tn" placeholder="الاسم"><input id="tu" placeholder="اسم المستخدم"><input id="tp" type="password" placeholder="كلمة المرور"><select id="tr"><option value="editor">مدخل بيانات</option><option value="viewer">عرض فقط</option></select></div><button onclick="addMember()">إضافة تابع</button>`:'<p class="m">⛔ إضافة الحسابات موقوفة من الرئيس.</p>'}${myMsgs().length?`<h4>ملاحظات الرئيس</h4><div class="sc"><table>${myMsgs().slice(0,5).map(m=>`<tr><td class="m">${new Date(m.t).toLocaleDateString('ar-IQ')}</td><td style="white-space:normal">${esc(m.text)}</td><td>${m.read?'✔':`<button onclick="readNote('${m.id}')">تم</button>`}</td></tr>`).join('')}</table></div>`:''}</div>`}
+async function addMember(){if(me.role!=='manager'||!isM())return;const u=$('#tu').value.trim(),p=$('#tp').value,n=$('#tn').value.trim()||u,role=$('#tr').value;
+ if(!u||p.length<6)return alert('اسم مستخدم وكلمة مرور (6 أحرف فأكثر)');if(!TEAM[role])return;
+ if(DB.users.some(x=>x.u===u)||['root','__proto__','constructor'].includes(u))return alert('الاسم مستخدم');
+ if(teamN(role)>=TEAM[role])return alert(role==='editor'?'وصلت للحد الأقصى: مدخلا بيانات فقط':'وصلت للحد الأقصى: حساب قراءة واحد فقط');
+ const salt=rnd();DB.users.push({u,name:n,role,salt,hash:await hash(p,salt),by:me.u,ws:me.ws});log('إضافة تابع',u+' ('+ROLE[role]+')');save();render()}
+function delMember(u){if(me.role!=='manager'||!isM())return;const x=DB.users.find(z=>z.u===u&&z.by===me.u);if(!x||!confirm('حذف '+u+'؟'))return;DB.users=DB.users.filter(z=>z!==x);log('حذف تابع',u);save();render()}
+function readNote(id){const m=DB.msgs.find(x=>x.id===id&&x.to===me.u);if(m){m.read=true;save();render()}}
+/* ---- الرئيس: إدارة المدراء ---- */
+const mgrs=()=>DB.users.filter(x=>x.role==='manager');
+const bytes=o=>new TextEncoder().encode(JSON.stringify(o)).length;
+const kb=n=>'<bdi dir="ltr">'+(n>=1048576?(n/1048576).toFixed(2)+' MB':(n/1024).toFixed(1)+' KB')+'</bdi>';
+const mx=a=>a.reduce((m,x)=>x>m?x:m,0);
+function wsStats(wid){const w=DB.ws[wid]||newWs(),sales={},stock={};w.rcpts.forEach(r=>sales[r.cur]=(sales[r.cur]||0)+r.total);w.items.forEach(i=>stock[i.cur]=(stock[i.cur]||0)+i.price*i.qty);
+ const b={items:bytes(w.items),rcpts:bytes(w.rcpts),logs:bytes(w.logs)};
+ return {w,items:w.items.length,rcpts:w.rcpts.length,logs:w.logs.length,sales,stock,b,total:b.items+b.rcpts+b.logs,custs:new Set(w.rcpts.map(r=>ckey(r))).size,last:mx([...w.rcpts.map(r=>r.t),...w.logs.map(l=>l.t)])}}
+function mgrDetail(m,s,T){return `<h4>الحسابات</h4><div class="sc"><table><tr><th>الحساب</th><th>الصلاحية</th><th>آخر دخول</th><th></th></tr>${[m,...T].map(u=>`<tr><td>${esc(u.name)} <span class="m">(${esc(u.u)})</span>${u.blocked?' <b style="color:#c0392b">محجوب</b>':''}</td><td>${ROLE[u.role]}</td><td class="m">${u.last?new Date(u.last).toLocaleDateString('ar-IQ'):'—'}</td><td><button class="dg" onclick="kickUser('${esc(u.u)}')">${u.blocked?'السماح':'طرد'}</button>${u.role==='manager'?'':` <button class="dg" onclick="delMemberO('${esc(u.u)}')">حذف</button>`}</td></tr>`).join('')}</table></div>
+ <h4>تفاصيل البيانات</h4><div class="sc"><table><tr><td>المواد</td><td>${s.items} (${kb(s.b.items)})</td></tr><tr><td>قيمة المخزون</td><td>${totStr(s.stock)}</td></tr><tr><td>الوصولات</td><td>${s.rcpts} (${kb(s.b.rcpts)})</td></tr><tr><td>إجمالي المبيعات</td><td>${totStr(s.sales)}</td></tr><tr><td>عدد الزبائن</td><td>${s.custs}</td></tr><tr><td>سجل العمليات</td><td>${s.logs} (${kb(s.b.logs)})</td></tr><tr><td>سعر الصرف</td><td>${s.w.rate}</td></tr><tr><td>آخر نسخة JSON</td><td>${s.w.lastBackup?new Date(s.w.lastBackup).toLocaleString('ar-IQ'):'لم تؤخذ'}</td></tr></table></div>
+ ${DB.msgs.some(x=>x.to===m.u)?`<h4>الملاحظات المرسلة</h4><div class="sc"><table>${DB.msgs.filter(x=>x.to===m.u).sort((a,b)=>b.t-a.t).slice(0,8).map(x=>`<tr><td class="m">${new Date(x.t).toLocaleDateString('ar-IQ')}</td><td style="white-space:normal">${esc(x.text)}</td><td>${x.read?'✔ قُرئت':'لم تُقرأ'}</td><td><button class="dg" onclick="delNote('${x.id}')">حذف</button></td></tr>`).join('')}</table></div>`:''}
+ <div class="row"><button onclick="mgrBackup('${esc(m.u)}')">نسخة JSON لبيانات المدير</button><button class="dg" onclick="delMgr('${esc(m.u)}')">حذف المدير وتابعيه وبياناتهم</button></div>`}
+function usersV(){if(!isO())return'';
+ const ids=['root',...mgrs().map(m=>m.u)],st={};ids.forEach(i=>st[i]=wsStats(i));const all=ids.reduce((t,i)=>t+st[i].total,0)||1;
+ let h=`<div class="card"><h3>📊 استهلاك التخزين</h3><p class="m">إجمالي بيانات كل المجموعات: <b>${kb(ids.reduce((t,i)=>t+st[i].total,0))}</b>${storeInfo?' — '+esc(storeInfo):''}</p>${ids.map(i=>`<div>${i==='root'?'الرئيس (بياناتك)':esc(byName(i))+' وتابعوه'} <span class="m">${kb(st[i].total)} (${Math.round(st[i].total/all*100)}%)</span><div style="background:var(--b);border-radius:6px;height:8px;margin:4px 0 8px"><div style="width:${Math.max(2,Math.round(st[i].total/all*100))}%;background:var(--p);height:8px;border-radius:6px"></div></div></div>`).join('')}</div>`;
+ h+=`<div class="card"><h3>إضافة مدير</h3><div class="row"><input id="nn" placeholder="الاسم"><input id="nu" placeholder="اسم المستخدم"><input id="np" type="password" placeholder="كلمة المرور"></div><button class="pr" onclick="addUser()">إضافة مدير</button><p class="m">لكل مدير مخزن ووصولات وسجل مستقلة، يشترك فيها مع تابعيه فقط. والمدير هو من ينشئ حسابات تابعيه (مدخلا بيانات وحساب قراءة).</p></div>`;
+ mgrs().forEach(m=>{const s=st[m.u],T=DB.users.filter(x=>x.by===m.u),open=mgrOpen.has(m.u),un=DB.msgs.filter(x=>x.to===m.u&&!x.read).length,q=esc(m.u);
+  h+=`<div class="card"><div class="row" style="align-items:center"><h3 style="margin:0;flex:1">${esc(m.name)} <span class="m">(${q})</span></h3>${m.blocked?'<b style="color:#c0392b">محجوب</b>':m.frozen?'<b style="color:#c0392b">الإدخال موقوف</b>':'<b style="color:#1a7f37">فعّال</b>'}</div><p class="m">التابعون: ${T.length} — المواد: ${s.items} — الوصولات: ${s.rcpts} — المبيعات: ${totStr(s.sales)} — التخزين: ${kb(s.total)} — آخر نشاط: ${s.last?new Date(s.last).toLocaleString('ar-IQ'):'—'}</p><div class="row"><button onclick="mgrTog('${q}')">${open?'إخفاء التفاصيل':'التفاصيل'}</button><button onclick="kickGrp('${q}')">تسجيل خروج للمجموعة</button><button class="${m.frozen?'pr':'dg'}" onclick="freezeGrp('${q}')">${m.frozen?'إلغاء الإيقاف':'إيقاف إدخال البيانات'}</button><button onclick="sendNote('${q}')">إرسال ملاحظة${un?' ('+un+' غير مقروءة)':''}</button></div>${open?mgrDetail(m,s,T):''}</div>`});
+ const old=DB.users.filter(x=>x.role!=='owner'&&x.role!=='manager'&&!DB.users.some(m=>m.role==='manager'&&m.u===x.by));
+ if(old.length)h+=`<div class="card"><h3>حسابات تابعة للرئيس مباشرة</h3><div class="sc"><table>${old.map(u=>`<tr><td>${esc(u.name)} <span class="m">(${esc(u.u)})</span>${u.blocked?' <b style="color:#c0392b">محجوب</b>':''}</td><td>${ROLE[u.role]}</td><td><button class="dg" onclick="kickUser('${esc(u.u)}')">${u.blocked?'السماح':'طرد'}</button> <button class="dg" onclick="delMemberO('${esc(u.u)}')">حذف</button></td></tr>`).join('')}</table></div><p class="m">حسابات قديمة تعمل على بيانات الرئيس.</p></div>`;
+ return h}
+function mgrTog(u){mgrOpen.has(u)?mgrOpen.delete(u):mgrOpen.add(u);render()}
+const getMgr=u=>DB.users.find(x=>x.u===u&&x.role==='manager');
+function kickGrp(u){if(!isO())return;const m=getMgr(u);if(!m||!confirm('تسجيل خروج للمدير «'+m.name+'» وتابعيه الآن؟ يستطيعون الدخول من جديد بكلمات مرورهم.'))return;m.outAt=Date.now();log('خروج مجموعة',u);save();render()}
+function freezeGrp(u){if(!isO())return;const m=getMgr(u);if(!m)return;const on=!m.frozen;
+ if(!confirm(on?'إيقاف إدخال البيانات لدى المدير «'+m.name+'» وتابعيه بالكامل؟ يبقون قادرين على الاطلاع فقط حتى تلغي الإيقاف.':'إلغاء الإيقاف وإعادة إدخال البيانات للمدير وتابعيه؟'))return;
+ m.frozen=on;log(on?'إيقاف إدخال':'إلغاء إيقاف',u);save();render()}
+function sendNote(u){if(!isO()||!getMgr(u))return;const t=prompt('اكتب الملاحظة للمدير:');if(!t||!t.trim())return;DB.msgs.push({id:rnd(),to:u,t:Date.now(),text:t.trim().slice(0,500),read:false});log('ملاحظة لمدير',u);save();render()}
+function delNote(id){if(!isO())return;DB.msgs=DB.msgs.filter(x=>x.id!==id);save();render()}
+function mgrBackup(u){if(!isO()||!DB.ws[u])return;saveFile('backup-'+u+'-'+new Date().toISOString().slice(0,10)+'.json',new Blob([JSON.stringify(dataOnly(DB.ws[u]))],{type:'application/json'}))}
+function delMgr(u){if(!isO())return;const m=getMgr(u);if(!m)return;const n=DB.users.filter(x=>x.by===u).length;
+ if(!confirm('حذف المدير «'+m.name+'» و'+n+' من تابعيه وكل مخزنهم ووصولاتهم وسجلهم نهائياً؟ لا يمكن التراجع.'))return;
+ if(prompt('للتأكيد اكتب اسم المستخدم: '+u)!==u)return alert('لم يتطابق الاسم، أُلغي الحذف');
+ DB.users=DB.users.filter(x=>x.u!==u&&x.by!==u);delete DB.ws[u];DB.msgs=DB.msgs.filter(x=>x.to!==u);mgrOpen.delete(u);log('حذف مدير',u);save();render()}
+function delMemberO(u){if(!isO())return;const x=DB.users.find(z=>z.u===u&&z.role!=='owner'&&z.role!=='manager');if(!x||!confirm('حذف '+u+'؟'))return;DB.users=DB.users.filter(z=>z!==x);log('حذف تابع',u);save();render()}
+function kickUser(u){if(!isO()||u===me.u)return;const x=DB.users.find(z=>z.u===u);if(!x)return;
+ if(!confirm((x.blocked?'السماح للحساب ':'طرد الحساب ')+u+(x.blocked?' بالدخول مجدداً؟':(x.role==='manager'?' من الدخول؟ سيُطرد معه كل تابعيه ولن يدخلوا حتى تسمح له.':' من الدخول؟ سيُخرج ولن يستطيع الدخول حتى تسمح له.'))))return;
+ x.blocked=!x.blocked;log(x.blocked?'طرد حساب':'إعادة السماح لحساب',u);save();render()}
+function saveRate(){const r=+$('#rt').value;if(!(r>0))return;log('تغيير سعر الصرف',DB.rate+' ← '+r);DB.rate=r;save();render()}
+async function addUser(){if(!isO())return;const u=$('#nu').value.trim(),p=$('#np').value,n=$('#nn').value.trim()||u;
+ if(!u||p.length<6)return alert('اسم مستخدم وكلمة مرور (6 أحرف فأكثر)');if(DB.users.some(x=>x.u===u)||['root','__proto__','constructor'].includes(u))return alert('الاسم مستخدم');
+ const salt=rnd();DB.users.push({u,name:n,role:'manager',salt,hash:await hash(p,salt),ws:u});DB.ws[u]=newWs();log('إضافة مدير',u);save();render()}
+const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+function exp(w,kind){const D=t=>new Date(t).toLocaleString('en-GB'),stamp=new Date().toISOString().slice(0,10);const days=+(($('#rp')||{}).value||0),since=days?Date.now()-days*864e5:0,inP=x=>x.t>=since;let title,head,wd,rows;
+ if(w==='items'){title='جرد المخزن';head=['المادة','الكود','العدد','السعر','القيمة','ملاحظات'];wd=[.24,.13,.08,.18,.18,.19];rows=DB.items.map(i=>[i.name,i.code||'',i.qty,fmt(i.price,i.cur),fmt(i.price*i.qty,i.cur),i.note||'']);}
+ else if(w==='rc'){title='سجل الوصولات';head=['#','التاريخ','الزبون','المواد','الإجمالي'];wd=[.07,.2,.2,.31,.22];rows=DB.rcpts.filter(inP).map(r=>[r.no,D(r.t),r.cust,r.lines.map(l=>l.name+' x'+l.n+(l.note?' ('+l.note+')':'')).join(' | ')+(r.cnote?' — ملاحظة الزبون: '+r.cnote:''),fmt(r.total,r.cur)]);}
+ else{title='سجل العمليات';head=['الوقت','المستخدم','العملية','التفاصيل'];wd=[.22,.14,.2,.44];rows=DB.logs.filter(inP).map(l=>[D(l.t),l.u,l.action,l.detail]);}
+ if(kind==='pdf')saveFile(w+'-'+stamp+'.pdf',tablePdf(title,head,rows,wd));
+ log('تصدير',w+' '+kind);save()}
+const ACC_ACTS=new Set(['تسجيل دخول','إنشاء النظام','إضافة مستخدم','حذف مستخدم','طلب حساب','إلغاء طلب حساب','موافقة على حساب','رفض طلب حساب','طرد حساب','إعادة السماح لحساب','إضافة مدير','إضافة تابع','حذف مدير','حذف تابع','إيقاف إدخال','إلغاء إيقاف','خروج مجموعة','ملاحظة لمدير']);
+const dataOnly=d=>({items:d.items,rcpts:d.rcpts,logs:(d.logs||[]).filter(l=>!ACC_ACTS.has(l.action)),rate:d.rate,seq:d.seq});
+function backup(){if(!isM())return;saveFile('backup-'+new Date().toISOString().slice(0,10)+'.json',new Blob([JSON.stringify(dataOnly(DB))],{type:'application/json'}));log('نسخة احتياطية','');DB.lastBackup=Date.now();save();banner()}
+function restore(f){if(!isM()||!f||!confirm('سيُستبدل المخزن والوصولات والسجل بما في النسخة المختارة. الحسابات لا تتأثر. متأكد؟'))return;const rd=new FileReader();rd.onload=async()=>{try{const d=JSON.parse(rd.result);if(!Array.isArray(d.items)||!Array.isArray(d.rcpts))throw 0;
+ const n=dataOnly(d);n.logs.forEach(l=>{if(!l.id)l.id=rnd()});n.rate=n.rate||DB.rate;n.seq=n.seq||Math.max(0,...n.rcpts.map(r=>r.no||0));
+ Object.assign(DB,n);log('استرجاع نسخة','');save();alert('تم الاسترجاع');render()}catch(e){alert('الملف غير صالح')}};rd.readAsText(f)}
+(async()=>{try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+ try{DB=(await idbGet('db'))||null}catch(e){DB=null}
+ if(!DB){try{const old=JSON.parse(localStorage.getItem(KEY));if(old&&old.users){DB=old;await idbSet('db',DB)}}catch(e){}}
+ if(DB&&!DB.created)DB.created=Date.now();if(DB)DB=mount(DB);
+ updInfo();const su=savedUser();
+ if(DB&&su){me=su;start()}else loginV()})();
+</script></body></html>
